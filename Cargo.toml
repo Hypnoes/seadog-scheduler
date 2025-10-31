@@ -2,7 +2,7 @@
 name = "seadog-scheduler"
 version = "0.1.0"
 authors = ["VS Code <vscode@microsoft.com>"]
-edition = "2021"
+edition = "2024"
 
 [lib]
 path = "./src/lib/lib.rs"
