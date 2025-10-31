@@ -44,12 +44,17 @@ impl Dag {
         Ok(())
     }
 
+    /// Checks if a node exists by ID
+    fn has_node(&self, id: &str) -> bool {
+        self.nodes.iter().any(|node| node.id == id)
+    }
+
     /// Adds a directed edge from `from` to `to` (from must complete before to)
     pub fn add_edge(&mut self, from: &str, to: &str) -> Result<(), String> {
-        if !self.nodes.contains(&Node::new(from)) {
+        if !self.has_node(from) {
             return Err(format!("Source node '{}' does not exist", from));
         }
-        if !self.nodes.contains(&Node::new(to)) {
+        if !self.has_node(to) {
             return Err(format!("Target node '{}' does not exist", to));
         }
 
@@ -59,7 +64,7 @@ impl Dag {
     }
 
     /// Performs topological sort to get execution order
-    /// Returns None if the graph has a cycle
+    /// Returns Err if the graph has a cycle
     fn topological_sort(&self) -> Result<Vec<String>, String> {
         let mut in_degree: HashMap<String, usize> = HashMap::new();
 
