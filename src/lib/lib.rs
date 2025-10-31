@@ -65,7 +65,7 @@ impl Dag {
 
     /// Performs topological sort to get execution order
     /// Returns Err if the graph has a cycle
-    fn topological_sort(&self) -> Result<Vec<String>, String> {
+    fn topological_sort(&self) -> Result<impl Iterator<Item = String>, String> {
         let mut in_degree: HashMap<String, usize> = HashMap::new();
 
         // Initialize in-degree for all nodes
@@ -109,7 +109,7 @@ impl Dag {
             return Err("DAG contains a cycle".to_string());
         }
 
-        Ok(sorted)
+        Ok(sorted.into_iter())
     }
 
     /// Gets the task function for a node
@@ -162,7 +162,7 @@ impl Scheduler {
 
     /// Gets the execution order without running tasks
     pub fn get_execution_order(&self) -> Result<Vec<String>, String> {
-        self.dag.topological_sort()
+        self.dag.topological_sort().map(|iter| iter.collect())
     }
 }
 
@@ -243,7 +243,7 @@ mod tests {
         dag.add_edge("task1", "task2").unwrap();
         dag.add_edge("task2", "task3").unwrap();
 
-        let order = dag.topological_sort().unwrap();
+        let order: Vec<String> = dag.topological_sort().unwrap().collect();
         assert_eq!(order, vec!["task1", "task2", "task3"]);
     }
 
@@ -260,7 +260,7 @@ mod tests {
         dag.add_edge("task2", "task4").unwrap();
         dag.add_edge("task3", "task4").unwrap();
 
-        let order = dag.topological_sort().unwrap();
+        let order: Vec<String> = dag.topological_sort().unwrap().collect();
         assert_eq!(order[0], "task1");
         assert_eq!(order[3], "task4");
         assert!(order[1] == "task2" || order[1] == "task3");
