@@ -1,8 +1,13 @@
 [package]
-name = "hello_remote_world"
+name = "seadog-scheduler"
 version = "0.1.0"
 authors = ["VS Code <vscode@microsoft.com>"]
+edition = "2021"
 
 [lib]
-path ="./src/lib/lib.rs"
+path = "./src/lib/lib.rs"
+
+[dependencies]
+
+[dev-dependencies]
 
