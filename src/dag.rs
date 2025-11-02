@@ -171,15 +171,16 @@ impl Dag {
             Direction::DFS => VecDeque::pop_back,
         };
         while let Some(node) = pop(&mut queue) {
-            // Insert returns true if the value was not already present
-            if !visited_set.contains(&node) {
-                visited_set.insert(node.clone());
+            // HashSet::insert returns true if the value was newly inserted
+            if visited_set.insert(node.clone()) {
                 visited_order.push(node.clone());
+                queued_set.remove(&node);
                 
                 // Process neighbors of the current node
                 if let Some(neighbors) = self.node_table.get(&node) {
                     for neighbor in neighbors {
-                        if !visited_set.contains(neighbor) && !queued_set.contains(neighbor) {
+                        // Check queued_set first as it's likely smaller, then visited_set
+                        if !queued_set.contains(neighbor) && !visited_set.contains(neighbor) {
                             queued_set.insert(neighbor.clone());
                             queue.push_back(neighbor.clone());
                         }
