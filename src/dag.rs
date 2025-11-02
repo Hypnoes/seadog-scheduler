@@ -150,7 +150,7 @@ impl Dag {
         let mut queue: VecDeque<Node> = VecDeque::new();
         let mut visited: Vec<Node> = Vec::new();
 
-        // initialize queue with the first node
+        // initialize queue with all nodes having zero in-degree (root nodes)
         let mut in_degrees = HashMap::new();
         for node in self.node_table.keys() {
             in_degrees.insert(node.clone(), self.in_degree(node));
