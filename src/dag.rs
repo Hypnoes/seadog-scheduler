@@ -85,10 +85,9 @@ impl Debug for Node {
     }
 }
 
-/// Enum representing the direction of traversal in a graph.
+/// Enum representing the traversal order in a graph.
 ///
-/// This enum is used to specify the direction of traversal in a graph.
-/// It can be used to traverse the graph in either breadth-first or depth-first order.
+/// This enum specifies whether to traverse the graph in breadth-first (BFS) or depth-first (DFS) order.
 enum Direction {
     BFS,
     DFS,
