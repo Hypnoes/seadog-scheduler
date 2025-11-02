@@ -20,7 +20,6 @@ fn main() {
     dag.add_edge(task_a.clone(), task_b.clone());
     let results = dag.execute();
 
-
     for result in results {
         match result {
             Ok(()) => println!("Task completed successfully"),
