@@ -18,7 +18,7 @@ impl Node {
     pub fn new(name: String, task: Task) -> Self {
         Node {
             id: uuid::Uuid::new_v4().to_string(),
-            name: name,
+            name,
             task,
         }
     }
@@ -144,6 +144,10 @@ impl Dag {
     ///
     /// Returns a vector of nodes in the specified direction.
     fn iter_nodes(&self, direction: Direction) -> Result<Vec<Node>, String> {
+        if self.node_table.is_empty() {
+            return Err("DAG is empty".to_string());
+        }
+
         let mut queue: VecDeque<Node> = VecDeque::new();
         let mut visited: Vec<Node> = Vec::new();
 
@@ -155,7 +159,6 @@ impl Dag {
         for node in self.node_table.keys() {
             if in_degrees[&node] == 0 {
                 queue.push_back(node.clone());
-                visited.push(node.clone());
             }
         }
 
@@ -245,10 +248,7 @@ impl Dag {
 
     pub fn execute(&self) -> Vec<Result<(), String>> {
         match self.topo_sort() {
-            Ok(task_order) => task_order
-                .into_iter()
-                .map(|node| node.execute().clone())
-                .collect(),
+            Ok(task_order) => task_order.into_iter().map(|node| node.execute()).collect(),
             Err(err) => vec![Err(err)],
         }
     }
@@ -398,6 +398,6 @@ mod tests {
         assert_eq!(order, vec!["a", "b", "c", "d", "e"]);
 
         let result = dag.execute();
-        assert_eq!(result, vec![Ok(7), Ok(7), Ok(7), Ok(7), Ok(7)]);
+        assert_eq!(result, vec![Ok(()), Ok(()), Ok(()), Ok(()), Ok(())]);
     }
 }
