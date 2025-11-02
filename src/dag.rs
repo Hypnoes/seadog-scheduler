@@ -1,4 +1,4 @@
-use std::collections::{HashMap, VecDeque};
+use std::collections::{HashMap, HashSet, VecDeque};
 use std::fmt::Debug;
 use std::hash::{Hash, Hasher};
 
@@ -149,7 +149,8 @@ impl Dag {
         }
 
         let mut queue: VecDeque<Node> = VecDeque::new();
-        let mut visited: Vec<Node> = Vec::new();
+        let mut visited_set: HashSet<Node> = HashSet::new();
+        let mut visited_order: Vec<Node> = Vec::new();
 
         // initialize queue with the first node
         let mut in_degrees = HashMap::new();
@@ -168,20 +169,21 @@ impl Dag {
             Direction::DFS => VecDeque::pop_back,
         };
         while let Some(node) = pop(&mut queue) {
-            if !visited.contains(&node) {
-                visited.push(node.clone());
+            if !visited_set.contains(&node) {
+                visited_set.insert(node.clone());
+                visited_order.push(node.clone());
             }
 
             if let Some(neighbors) = self.node_table.get(&node) {
                 for neighbor in neighbors {
-                    if !visited.contains(neighbor) {
+                    if !visited_set.contains(neighbor) {
                         queue.push_back(neighbor.clone());
                     }
                 }
             }
         }
 
-        Ok(visited)
+        Ok(visited_order)
     }
 
     pub fn bfs(&self) -> Result<Vec<Node>, String> {
