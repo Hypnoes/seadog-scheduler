@@ -150,15 +150,17 @@ impl Dag {
 
         let mut queue: VecDeque<Node> = VecDeque::new();
         let mut visited_set: HashSet<Node> = HashSet::new();
+        let mut queued_set: HashSet<Node> = HashSet::new();
         let mut visited_order: Vec<Node> = Vec::new();
 
-        // initialize queue with the first node
+        // initialize queue with nodes that have no incoming edges
         let mut in_degrees = HashMap::new();
         for node in self.node_table.keys() {
             in_degrees.insert(node.clone(), self.in_degree(node));
         }
         for node in self.node_table.keys() {
             if in_degrees[&node] == 0 {
+                queued_set.insert(node.clone());
                 queue.push_back(node.clone());
             }
         }
@@ -169,15 +171,18 @@ impl Dag {
             Direction::DFS => VecDeque::pop_back,
         };
         while let Some(node) = pop(&mut queue) {
+            // Insert returns true if the value was not already present
             if !visited_set.contains(&node) {
                 visited_set.insert(node.clone());
                 visited_order.push(node.clone());
-            }
-
-            if let Some(neighbors) = self.node_table.get(&node) {
-                for neighbor in neighbors {
-                    if !visited_set.contains(neighbor) {
-                        queue.push_back(neighbor.clone());
+                
+                // Process neighbors of the current node
+                if let Some(neighbors) = self.node_table.get(&node) {
+                    for neighbor in neighbors {
+                        if !visited_set.contains(neighbor) && !queued_set.contains(neighbor) {
+                            queued_set.insert(neighbor.clone());
+                            queue.push_back(neighbor.clone());
+                        }
                     }
                 }
             }
