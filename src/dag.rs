@@ -80,11 +80,13 @@ impl Dag {
     pub fn add_task_relation(&mut self, from: TaskNode, to: TaskNode) {
         if !self.node_table.contains_key(&from) {
             self.node_table.insert(from.clone(), Vec::new());
+            self.reverse_table.insert(from.clone(), Vec::new());
             self.indegree.insert(from.clone(), 0);
         }
 
         if !self.node_table.contains_key(&to) {
             self.node_table.insert(to.clone(), Vec::new());
+            self.reverse_table.insert(to.clone(), Vec::new());
             self.indegree.insert(to.clone(), 0);
         }
 
@@ -166,12 +168,9 @@ impl Dag {
     }
 
     pub fn execute(&self) -> Result<(), String> {
-        match self.resolve_execution_order() {
-            Ok(task_order) => task_order.into_iter().map(|node| node.execute()).collect(),
-            Err(err) => vec![Err(err)],
-        }
-        .into_iter()
-        .try_for_each(|res| res)
+        self.resolve_execution_order()?
+            .into_iter()
+            .try_for_each(|node| node.execute())
     }
 }
 
