@@ -1,4 +1,4 @@
-use std::collections::{HashMap, VecDeque};
+use std::collections::{HashMap, HashSet, VecDeque};
 use std::fmt::Debug;
 use std::hash::{Hash, Hasher};
 
@@ -85,10 +85,9 @@ impl Debug for Node {
     }
 }
 
-/// Enum representing the direction of traversal in a graph.
+/// Enum representing the traversal order in a graph.
 ///
-/// This enum is used to specify the direction of traversal in a graph.
-/// It can be used to traverse the graph in either breadth-first or depth-first order.
+/// This enum specifies whether to traverse the graph in bfs or dfs order.
 enum Direction {
     BFS,
     DFS,
@@ -143,15 +142,16 @@ impl Dag {
     /// Iterates over the nodes in the specified direction.
     ///
     /// Returns a vector of nodes in the specified direction.
-    fn iter_nodes(&self, direction: Direction) -> Result<Vec<Node>, String> {
+    fn traverse(&self, direction: Direction) -> Result<Vec<Node>, String> {
         if self.node_table.is_empty() {
             return Err("DAG is empty".to_string());
         }
 
         let mut queue: VecDeque<Node> = VecDeque::new();
-        let mut visited: Vec<Node> = Vec::new();
+        let mut visited: HashSet<Node> = HashSet::new();
+        let mut result: Vec<Node> = Vec::new();
 
-        // initialize queue with the first node
+        // initialize queue with all nodes with in-degree 0 (root nodes)
         let mut in_degrees = HashMap::new();
         for node in self.node_table.keys() {
             in_degrees.insert(node.clone(), self.in_degree(node));
@@ -169,7 +169,8 @@ impl Dag {
         };
         while let Some(node) = pop(&mut queue) {
             if !visited.contains(&node) {
-                visited.push(node.clone());
+                visited.insert(node.clone());
+                result.push(node.clone());
             }
 
             if let Some(neighbors) = self.node_table.get(&node) {
@@ -181,17 +182,26 @@ impl Dag {
             }
         }
 
-        Ok(visited)
+        Ok(result)
     }
 
     pub fn bfs(&self) -> Result<Vec<Node>, String> {
-        self.iter_nodes(Direction::BFS)
+        self.traverse(Direction::BFS)
     }
 
     pub fn dfs(&self) -> Result<Vec<Node>, String> {
-        self.iter_nodes(Direction::DFS)
+        self.traverse(Direction::DFS)
     }
 
+    /// Topological sort of the DAG
+    ///
+    /// Uses Kahn's algorithm to perform a topological sort on the DAG.
+    /// First finds all nodes with an indegree of 0 and adds them to the queue.
+    /// Then, iteratively removes nodes from the queue, reducing the indegree of their neighbors.
+    /// If a neighbor's indegree reaches 0, it is added to the queue.
+    /// Until the queue is empty, the nodes are added to the result vector.
+    ///
+    /// Returns a vector of nodes in topological order.
     pub fn topo_sort(&self) -> Result<Vec<Node>, String> {
         if self.node_table.is_empty() {
             return Err("No nodes found".into());
@@ -201,6 +211,7 @@ impl Dag {
         let mut indegree: HashMap<&Node, usize> = HashMap::new();
         let mut adj: HashMap<&Node, Vec<&Node>> = HashMap::new();
 
+        // Fill indegree and adjacency maps
         for (from, neighbors) in &self.node_table {
             indegree.entry(from).or_insert(0);
             let entry = adj.entry(from).or_insert_with(Vec::new);
@@ -223,14 +234,18 @@ impl Dag {
 
         let mut result: Vec<&Node> = Vec::with_capacity(indegree.len());
 
+        // Fill result vector with topologically sorted nodes
         while let Some(n) = queue.pop_front() {
             result.push(n);
             if let Some(neighbors) = adj.get(n) {
                 for m in neighbors {
+                    // Remove node from indegree map
                     if let Some(d) = indegree.get_mut(m) {
                         if *d > 0 {
+                            // Decrement indegree count
                             *d -= 1;
                             if *d == 0 {
+                                // Add node to queue if indegree count reaches zero
                                 queue.push_back(m);
                             }
                         }
