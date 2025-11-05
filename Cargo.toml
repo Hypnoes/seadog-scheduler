@@ -1,8 +1,12 @@
 [package]
-name = "hello_remote_world"
+name = "seadog-scheduler"
 version = "0.1.0"
-authors = ["VS Code <vscode@microsoft.com>"]
+authors = ["hypnoes <liumulei@icloud.com>"]
+edition = "2024"
 
-[lib]
-path ="./src/lib/lib.rs"
+[[bin]]
+name = "seadog-scheduler"
+path = "src/main.rs"
 
+[dependencies]
+uuid = { version = "1.18.1", features = ["v4"] }
