@@ -1,26 +1,29 @@
 use std::collections::{HashMap, VecDeque};
 use std::fmt::Debug;
 use std::hash::{Hash, Hasher};
+use std::sync::Arc;
 
-pub type Task = fn() -> Result<(), String>;
+use crate::task::Task;
+
+// pub type Task = fn() -> Result<(), String>;
 
 pub struct TaskNode {
     id: String,
-    name: String,
-    task: Task,
+    pub name: String,
+    task: Arc<dyn Task>,
 }
 
 impl TaskNode {
-    pub fn new(name: String, task: Task) -> Self {
+    pub fn new<T: Task + 'static>(name: String, task: T) -> Self {
         TaskNode {
             id: uuid::Uuid::new_v4().to_string(),
             name,
-            task,
+            task: Arc::new(task),
         }
     }
 
     pub fn execute(&self) -> Result<(), String> {
-        (self.task)()
+        (self.task).execute()
     }
 }
 
