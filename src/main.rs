@@ -1,4 +1,5 @@
 mod dag;
+mod task;
 
 use dag::{Dag, TaskNode};
 
